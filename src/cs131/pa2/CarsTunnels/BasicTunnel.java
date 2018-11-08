@@ -14,16 +14,20 @@ public class BasicTunnel extends Tunnel{
 	
 	int activeCars;//Car count
 	int activeSled;//Sled count
+	int activeAmberlamps;//Ambulance Count
 	
 	
 	private boolean carsShouldPass() {//Returns true if cars should pass this tunnel
-		return (activeCars > 2 || activeSled > 0);
+		return (activeCars > 2 || activeSled > 0) || activeAmberlamps > 0;
 	}
 	
 	private boolean sledShouldPass() {//returns true if sleds should pass this tunnel
-		return (activeCars > 0 || activeSled > 0);
+		return (activeCars > 0 || activeSled > 0 || activeAmberlamps > 0);
 	}
 	
+	private boolean amberlampShouldPass() {
+		return (false);
+	}
 
 	public BasicTunnel(String name) {
 		super(name);
@@ -43,17 +47,24 @@ public class BasicTunnel extends Tunnel{
 	
 	public synchronized boolean checkToEnter(Vehicle vehicle) {//Is the tunnel full checking
 		if(vehicle instanceof Car) {
-			if (!carsShouldPass()) {
-				activeCars++;
-				return true;
-			} else {
+			if (carsShouldPass()) {
 				return false;
+			} else {
+				activeCarsa++;
+				return true;
 			}
 		} else if (vehicle instanceof Sled) {
 			if(sledShouldPass()) {
 				return false;
 			} else {
 				activeSled++;
+				return true;
+			}
+		} else if (vehicle instanceof Ambulance) {
+			if(amberlampShouldPass()) {
+				return false;
+			} else {
+				activeAmberlamps++;
 				return true;
 			}
 		}
@@ -67,10 +78,12 @@ public class BasicTunnel extends Tunnel{
 			activeCars--;			
 		} else if (vehicle instanceof Sled) {
 			activeSled--;	
+		} else if (vehicle instanceof Ambulance) {
+			activeAmberlamps--;
 		}
 		
 		
-		if (activeCars + activeSled == 0) {
+		if (activeCars + activeSled + activeAmberlamps == 0) {
 			dir = null;
 		}
 	}
