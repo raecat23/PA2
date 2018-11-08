@@ -65,8 +65,9 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	@Override
 	public boolean tryToEnterInner(Vehicle vehicle) {
 		lock.lock();
-		vehicle.addPPS(this);
 		boolean entered = false;
+		try {
+		vehicle.addPPS(this);	
 		boolean ambulance = false;
 		//System.out.println("TRYING TO ENTER WITH PPS");
 		if(vehicle instanceof Ambulance ) {
@@ -93,7 +94,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 			//i thinnk the ambulance wait should go here like if all tunnels are full of ambulances
 		}
 		if(!ambulance) {
-			lock.lock();
+			//lock.lock();
 			
 			while(!entered) {
 				System.out.println("entering while loop");
@@ -146,9 +147,10 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 				
 		
 		} 
+		}finally {
 		lock.unlock();
 		return entered;
-		
+		}
 	}
 
 	@Override
@@ -186,7 +188,9 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 				}
 			}
 		} finally {
+			
 			if (removedSomething) {prioCond.signalAll();}
+			System.out.println("EXITING");
 			lock.unlock();
 		}
 		
