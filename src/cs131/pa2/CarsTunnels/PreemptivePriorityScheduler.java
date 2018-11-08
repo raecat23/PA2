@@ -20,14 +20,14 @@ public class PreemptivePriorityScheduler extends Tunnel{
 	Map<Tunnel, Condition> progressingConditions = new HashMap();
 	Map<Tunnel, Condition> nonProgressingConditions = new HashMap();
 	//public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
-	public PriorityScheduler prioSched;
+	//public PriorityScheduler prioSched;
 	private final Lock lock = new ReentrantLock(); 
 	private final Condition prioCond = lock.newCondition();
 public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	
 	public ArrayList<Vehicle> prioWait = new ArrayList();
 	
-	public HashMap<Tunnel, Lock> tunnelList = new HashMap<Tunnel, Lock>();
+	//public HashMap<Tunnel, Lock> tunnelList = new HashMap<Tunnel, Lock>();
 	int maxWaitingPriority = 0;
 	public PreemptivePriorityScheduler(String name, Collection<Tunnel> tunnels, Log log) {
 		super(name);
@@ -41,7 +41,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 			nonProgressingConditions.put(t, nonprog.newCondition());
 		}
 		System.out.println("Everything created");
-		prioSched = new PriorityScheduler(name, tunnels, log);
+		//prioSched = new PriorityScheduler(name, tunnels, log);
 		//use this to make the locks and map them to each lock
 	}
 	public boolean gottaWait(Vehicle vehicle) {
@@ -62,6 +62,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	@Override
 	public boolean tryToEnterInner(Vehicle vehicle) {
 		vehicle.addPPS(this);
+		boolean entered = false;
 		boolean ambulance = false;
 		//System.out.println("TRYING TO ENTER WITH PPS");
 		if(vehicle instanceof Ambulance ) {
@@ -69,11 +70,11 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 			ambulance = true;
 		}
 		while(ambulance) {//im forgetting locks here
-			for(Tunnel t : prioSched.tunnelList.keySet()) {
+			for(Tunnel t : progressingLocks.keySet()) {
 				//System.out.println("checking tunnels");
-				for(Vehicle v : prioSched.VehicleAndTunnel.keySet()) {
+				for(Vehicle v : VehicleAndTunnel.keySet()) {
 		//			System.out.println("Checking vehicles");
-					if(prioSched.VehicleAndTunnel.get(v).equals(t) && !(v instanceof Ambulance)) {
+					if(VehicleAndTunnel.get(v).equals(t) && !(v instanceof Ambulance)) {
 						nonProgressingConditions.get(t).signalAll();
 			//			System.out.println("Ambulance entered");
 						//ambulance = false;
@@ -84,16 +85,17 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 			//i thinnk the ambulance wait should go here like if all tunnels are full of ambulances
 		}
 		if(!ambulance) {
-			boolean entered = false;
+			lock.lock();
+			
 			while(!entered) {
 				System.out.println("entering while loop");
 				//If your cool enough to go right in
 				if (!gottaWait(vehicle)&&!entered&&!onWaitingList(vehicle)) {
 					System.out.println("You dont need to wait");
-					Iterator it = tunnelList.entrySet().iterator();
+					Iterator it = progressingLocks.entrySet().iterator();
 					while (it.hasNext()) {
 						System.out.println("Iterating through tunnels");
-						Pair<Tunnel, Lock> pair = (Pair<Tunnel, Lock>)it.next();
+						Map.Entry<Tunnel, Lock>pair = (Map.Entry<Tunnel, Lock>)it.next();
 						if(pair.getKey().tryToEnter(vehicle)) {
 							System.out.println("Entering tunnel");
 							VehicleAndTunnel.put(vehicle, pair.getKey());
@@ -106,7 +108,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 						prioWait.add(vehicle);
 					}
 				} else if (onWaitingList(vehicle)&&!entered&&!gottaWait(vehicle)){
-					Iterator it = tunnelList.entrySet().iterator();
+					Iterator it = progressingLocks.entrySet().iterator();
 					while (it.hasNext()) {
 						Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)it.next();
 						if(pair.getKey().tryToEnter(vehicle)) {
@@ -134,13 +136,13 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 				}
 			}
 				
-			
+		lock.unlock();	
 		} 
 		
 			//System.out.println(vehicle.toString() + " Trying to enter in PPS");
 			//return prioSched.tryToEnterInner(vehicle);
 		
-		return false;
+		return entered;
 		//priority scheduler
 		/*
 		 * the locks go in here and condition variables and they are put in
@@ -157,7 +159,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	public void exitTunnelInner(Vehicle vehicle) {
 		if(vehicle instanceof Ambulance) {
 			System.out.println("Ambulance exiting");
-			Tunnel temp = prioSched.VehicleAndTunnel.get(vehicle);
+			Tunnel temp = VehicleAndTunnel.get(vehicle);
 			nonProgressingConditions.get(temp).notifyAll();
 		}
 		boolean removedSomething = false;
@@ -169,7 +171,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 				System.out.println(bingo.toString());
 				if(bingo.getKey().equals(vehicle)) {
 					try {
-						Iterator bitter = tunnelList.entrySet().iterator();
+						Iterator bitter = progressingLocks.entrySet().iterator();
 						while (bitter.hasNext()) {
 							Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)bitter.next();
 							if(pair.getKey().equals(bingo.getValue())) {
@@ -191,20 +193,20 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	}
 	
 	public Lock getNonProgressingLock(Vehicle vehicle) {
-		Tunnel temp = prioSched.VehicleAndTunnel.get(vehicle);
+		Tunnel temp = VehicleAndTunnel.get(vehicle);
 		System.out.println(temp.toString());
 		return nonProgressingLocks.get(temp);
 	}
 	public Lock getProgressingLock(Vehicle vehicle) {
-		Tunnel temp = prioSched.VehicleAndTunnel.get(vehicle);
+		Tunnel temp = VehicleAndTunnel.get(vehicle);
 		return progressingLocks.get(temp);
 	}
 	public Condition getNonProgressingCon(Vehicle vehicle) {
-		Tunnel temp = prioSched.VehicleAndTunnel.get(vehicle);
+		Tunnel temp = VehicleAndTunnel.get(vehicle);
 		return nonProgressingConditions.get(temp);
 	}
 	public Condition getProgressingCon(Vehicle vehicle) {
-		Tunnel temp = prioSched.VehicleAndTunnel.get(vehicle);
+		Tunnel temp = VehicleAndTunnel.get(vehicle);
 		return progressingConditions.get(temp);
 	}
 	

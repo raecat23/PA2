@@ -169,10 +169,12 @@ public abstract class Vehicle implements Runnable {
      */
     public final void doWhileInTunnel() {
     	if(p != null) {
+    		System.out.println("In the PPS dowhileintunnel");
     		long t = System.currentTimeMillis();
     		while(t>0) {
     		boolean ambulance = false;
     		if(ambulance) {
+    			System.out.println("Theres an ambulance and the vehicles have been signaled");
     			p.getNonProgressingLock(this).lock();
     			try {
 					p.getProgressingCon(this).await(100, TimeUnit.MILLISECONDS);
@@ -184,20 +186,25 @@ public abstract class Vehicle implements Runnable {
     		}
     		ambulance = true;
     		long t1 = System.currentTimeMillis();
+    	
     		try {
+    		//	p.getProgressingLock(this).lock();
 				p.getProgressingCon(this).await(t1, TimeUnit.MILLISECONDS);
+				//p.getProgressingLock(this).unlock();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+    		//p.getProgressingLock(this).unlock();
     		long t2 = System.currentTimeMillis();
     		t -= t1 - t2;
+    		System.out.println("This is t at the end" + t);
     		}
     		
     	}
     else{
     	try {
-    
+    System.out.println("In the normal dowhileintunnel");
              Thread.sleep((10 - speed) * 100);
          } catch(InterruptedException e) {
              System.err.println("Interrupted vehicle " + getName());
