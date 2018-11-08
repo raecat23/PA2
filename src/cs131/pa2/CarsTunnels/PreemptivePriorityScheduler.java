@@ -32,7 +32,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	public PreemptivePriorityScheduler(String name, Collection<Tunnel> tunnels, Log log) {
 		super(name);
 		for(Tunnel t : tunnels) {
-			System.out.println("IS THIS THE GODDAMN PROBLEM");
+			//System.out.println("IS THIS THE GODDAMN PROBLEM");
 			Lock prog = new ReentrantLock();
 			System.out.println("Progressing Lock: " + prog.toString());
 			progressingLocks.put(t, prog);
@@ -43,7 +43,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 			progressingConditions.put(t, prog.newCondition());
 			nonProgressingConditions.put(t, nonprog.newCondition());
 		}
-		System.out.println("Everything created");
+		//System.out.println("Everything created");
 		//prioSched = new PriorityScheduler(name, tunnels, log);
 		//use this to make the locks and map them to each lock
 	}
@@ -82,7 +82,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 						nonProgressingLocks.get(t).lock();
 						nonProgressingConditions.get(t).signalAll();
 						nonProgressingLocks.get(t).unlock();
-			//			System.out.println("Entering tunnel");
+						System.out.println("Entering tunnel");
 		
 						VehicleAndTunnel.put(vehicle, t);
 						entered = true;
@@ -144,34 +144,26 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 				}
 			}
 				
-		//lock.unlock();	
-		} 
 		
-			//System.out.println(vehicle.toString() + " Trying to enter in PPS");
-			//return prioSched.tryToEnterInner(vehicle);
+		} 
 		lock.unlock();
 		return entered;
-		//priority scheduler
-		/*
-		 * the locks go in here and condition variables and they are put in
-		 * keep track of two hashmaps in preemptive priorty scheduler where the key is the tunnel and the value is the lock or condition variable 
-		 * vehicles should only have access to their locks and also their condition variables
-		 * when theres an ambulance you signal all and it interrupts where it is and then theres an ambulance
-		 * if its an ambulance everything is immediately stopped
-		 * else the priority scheduler should happen except if something of higher priority comes it should stop whatever is in there 
-		 * to go in (i think?)
-		 */
+		
 	}
 
 	@Override
 	public void exitTunnelInner(Vehicle vehicle) {
+		lock.lock();
 		if(vehicle instanceof Ambulance) {
 			System.out.println("Ambulance exiting");
 			Tunnel temp = VehicleAndTunnel.get(vehicle);
+			System.out.println("TEMP IN EXITING: " +temp.toString());
+			nonProgressingLocks.get(temp).lock();
 			nonProgressingConditions.get(temp).notifyAll();
+			nonProgressingLocks.get(temp).unlock();
 		}
 		boolean removedSomething = false;
-		lock.lock();
+
 		try {
 			Iterator iter = VehicleAndTunnel.entrySet().iterator();
 			while(iter.hasNext()) {

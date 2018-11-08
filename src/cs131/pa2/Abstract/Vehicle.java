@@ -170,14 +170,15 @@ public abstract class Vehicle implements Runnable {
     public final void doWhileInTunnel() {
     	if(p != null) {
     		System.out.println("In the PPS dowhileintunnel");
-    		long t = System.currentTimeMillis();
+    		long t = (10 - speed) * 100;
     		while(t>0) {
     		boolean ambulance = false;
     		if(ambulance) {
     			System.out.println("Theres an ambulance and the vehicles have been signaled");
     			p.getNonProgressingLock(this).lock();
     			try {
-					p.getProgressingCon(this).await(100, TimeUnit.MILLISECONDS);
+    				System.out.println("Awaiting Ambulance");
+					p.getProgressingCon(this).await((10 - speed) * 100, TimeUnit.MILLISECONDS);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -186,19 +187,23 @@ public abstract class Vehicle implements Runnable {
     		}
     		ambulance = true;
     		long t1 = System.currentTimeMillis();
-    	
+    		p.getProgressingLock(this).lock();
+    		System.out.println("This is t at the beginning" + t);
     		try {
-    			p.getProgressingLock(this).lock();
-				p.getProgressingCon(this).await(t1, TimeUnit.MILLISECONDS);
-				p.getProgressingLock(this).unlock();
+    			
+    			System.out.println("Awaiting " + p.getProgressingCon(this).toString());
+				p.getProgressingCon(this).await(t, TimeUnit.MILLISECONDS);
+			
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
     		//p.getProgressingLock(this).unlock();
     		long t2 = System.currentTimeMillis();
-    		t -= t1 - t2;
+    		System.out.println("This is t1 - t2" +( t1-t2));
+    		t -= Math.abs(t1 - t2);
     		System.out.println("This is t at the end" + t);
+    	p.getProgressingLock(this).unlock();
     		}
     		
     	}
