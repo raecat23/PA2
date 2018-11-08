@@ -33,10 +33,13 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 		super(name);
 		for(Tunnel t : tunnels) {
 			System.out.println("IS THIS THE GODDAMN PROBLEM");
-			Lock nonprog = new ReentrantLock();
-			progressingLocks.put(t, nonprog);
 			Lock prog = new ReentrantLock();
-			nonProgressingLocks.put(t, prog);
+			System.out.println("Progressing Lock: " + prog.toString());
+			progressingLocks.put(t, prog);
+			
+			Lock nonprog = new ReentrantLock();
+			System.out.println("NONProgressing Lock: " + nonprog.toString());
+			nonProgressingLocks.put(t, nonprog);
 			progressingConditions.put(t, prog.newCondition());
 			nonProgressingConditions.put(t, nonprog.newCondition());
 		}
@@ -61,6 +64,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 
 	@Override
 	public boolean tryToEnterInner(Vehicle vehicle) {
+		lock.lock();
 		vehicle.addPPS(this);
 		boolean entered = false;
 		boolean ambulance = false;
@@ -75,10 +79,14 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 				for(Vehicle v : VehicleAndTunnel.keySet()) {
 		//			System.out.println("Checking vehicles");
 					if(VehicleAndTunnel.get(v).equals(t) && !(v instanceof Ambulance)) {
+						nonProgressingLocks.get(t).lock();
 						nonProgressingConditions.get(t).signalAll();
-			//			System.out.println("Ambulance entered");
-						//ambulance = false;
-						return true;
+						nonProgressingLocks.get(t).unlock();
+			//			System.out.println("Entering tunnel");
+		
+						VehicleAndTunnel.put(vehicle, t);
+						entered = true;
+					
 					}
 				}
 			}
@@ -136,12 +144,12 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 				}
 			}
 				
-		lock.unlock();	
+		//lock.unlock();	
 		} 
 		
 			//System.out.println(vehicle.toString() + " Trying to enter in PPS");
 			//return prioSched.tryToEnterInner(vehicle);
-		
+		lock.unlock();
 		return entered;
 		//priority scheduler
 		/*
@@ -199,6 +207,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	}
 	public Lock getProgressingLock(Vehicle vehicle) {
 		Tunnel temp = VehicleAndTunnel.get(vehicle);
+		System.out.println("TEMP : " + temp.toString());
 		return progressingLocks.get(temp);
 	}
 	public Condition getNonProgressingCon(Vehicle vehicle) {

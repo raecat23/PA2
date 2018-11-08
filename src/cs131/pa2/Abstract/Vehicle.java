@@ -188,9 +188,9 @@ public abstract class Vehicle implements Runnable {
     		long t1 = System.currentTimeMillis();
     	
     		try {
-    		//	p.getProgressingLock(this).lock();
+    			p.getProgressingLock(this).lock();
 				p.getProgressingCon(this).await(t1, TimeUnit.MILLISECONDS);
-				//p.getProgressingLock(this).unlock();
+				p.getProgressingLock(this).unlock();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
