@@ -32,11 +32,11 @@ public class ConcreteFactory implements Factory {
 
 	@Override
 	public Vehicle createNewAmbulance(String label, Direction direction) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		return new Ambulance(label, direction);
 	}
 
 	@Override
 	public Tunnel createNewPreemptivePriorityScheduler(String label, Collection<Tunnel> tunnels, Log log) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		return new PreemptivePriorityScheduler(label, tunnels, log);
 	}
 }
