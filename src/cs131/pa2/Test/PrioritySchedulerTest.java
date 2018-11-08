@@ -211,6 +211,11 @@ public class PrioritySchedulerTest {
             sharedThread.start();
             vehicleThreads.add(sharedThread);
         }
+        try {
+			Thread.sleep(50);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
         // start 4 fast ambulances
         for (int i=0; i<4; i++) {
 	        Vehicle ambulance = TestUtilities.factory.createNewAmbulance("AMB"+i, Direction.values()[i % Direction.values().length]);
@@ -220,7 +225,7 @@ public class PrioritySchedulerTest {
 	        ambulanceThread.start();
 	        vehicleThreads.add(ambulanceThread);
 	        try {
-				Thread.sleep(400);
+				Thread.sleep(300);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -315,6 +320,11 @@ public class PrioritySchedulerTest {
         Thread car2Thread = new Thread(car2);
         car2Thread.start();
         vehicleThreads.add(car2Thread);
+        try {
+			Thread.sleep(50);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
         // start a slow ambulance
         Vehicle ambulance = TestUtilities.factory.createNewAmbulance("AMB0", Direction.NORTH);
         ambulance.setSpeed(0);
@@ -334,17 +344,21 @@ public class PrioritySchedulerTest {
 		Event currentEvent;
 		ambulance=null; car1=null; car2=null;
 		Tunnel ambulanceTunnel=null;
+		Tunnel car1Tunnel = null;
+		Vehicle lonelyCar = null;
 		boolean ambulanceLeft=false, carLonelyTunnelLeft=false;
 		do {
 			currentEvent = log.get();
 			if (currentEvent.getEvent() == EventType.ENTER_SUCCESS && currentEvent.getVehicle() instanceof Ambulance) {
 				ambulance = currentEvent.getVehicle();
 				ambulanceTunnel = currentEvent.getTunnel();
+				lonelyCar = (car1Tunnel == ambulanceTunnel ? car2: car1);
 			}
 			if (currentEvent.getEvent() == EventType.ENTER_SUCCESS && currentEvent.getVehicle() instanceof Car) {
 				switch(currentEvent.getVehicle().getName()){
 				case "0":
 					car1 = currentEvent.getVehicle();
+					car1Tunnel = currentEvent.getTunnel();
 					break;
 				case "1":
 					car2 = currentEvent.getVehicle();
@@ -359,14 +373,14 @@ public class PrioritySchedulerTest {
 					assertTrue("Vehicle "+currentEvent.getVehicle() + " left tunnel while ambulance was still running!", false);
 				}
 				if(currentEvent.getVehicle() instanceof Car && currentEvent.getTunnel().getName() != ambulanceTunnel.getName()) {
-					assertTrue("Car "+ currentEvent.getVehicle().getName() + " should be in the other Tunnel" , currentEvent.getVehicle() == car2);
+					assertTrue("Car "+ currentEvent.getVehicle().getName() + " should be in the other Tunnel" , currentEvent.getVehicle() == lonelyCar);
 					carLonelyTunnelLeft = true;
 				}
 				if(currentEvent.getVehicle() instanceof Ambulance) {
 					ambulanceLeft = true;
 					// at this point, car in the other tunnel must have left!
 					if(!carLonelyTunnelLeft)
-						assertTrue("Car "+ car2.getName() + " should not wait for ambulance to exit, since they are in different tunnels", false);
+						assertTrue("Car "+ lonelyCar.getName() + " should not wait for ambulance to exit, since they are in different tunnels", false);
 				}
 			}
 			System.out.println(currentEvent.toString());

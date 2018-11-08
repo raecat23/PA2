@@ -26,7 +26,7 @@ public class BasicTunnel extends Tunnel{
 	}
 	
 	private boolean amberlampShouldPass() {
-		return (false);
+		return (activeAmberlamps > 0);
 	}
 
 	public BasicTunnel(String name) {
