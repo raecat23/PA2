@@ -10,8 +10,8 @@ public class Ambulance extends Vehicle{
 
 	public Ambulance (String name, Direction direction) {
 		super(name, direction);
-		//this.setPriority(4); I don't think this is necesssary
-	}
+		this.setPriority(4); 
+		}
 
 	@Override
 	protected int getDefaultSpeed() {

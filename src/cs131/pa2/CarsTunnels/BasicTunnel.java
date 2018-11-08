@@ -50,7 +50,7 @@ public class BasicTunnel extends Tunnel{
 			if (carsShouldPass()) {
 				return false;
 			} else {
-				activeCarsa++;
+				activeCars++;
 				return true;
 			}
 		} else if (vehicle instanceof Sled) {
