@@ -82,7 +82,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 				Iterator<Entry<Tunnel, Lock>> it = progressingLocks.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)it.next();
-					if(pair.getKey().tryToEnter(vehicle)) {
+					if(pair.getKey().tryToEnter(vehicle)&&!entered) {
 						VehicleAndTunnel.put(vehicle, pair.getKey());
 						entered = true;
 						if(ambulance) {
@@ -102,7 +102,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 				Iterator<Entry<Tunnel, Lock>> it = progressingLocks.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)it.next();
-					if(pair.getKey().tryToEnter(vehicle)) {
+					if(pair.getKey().tryToEnter(vehicle)&&!entered) {
 						prioWait.remove(vehicle);										
 						int maxPrio = 0;
 						for (Vehicle v: prioWait) {
@@ -150,7 +150,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 						Iterator<Entry<Tunnel, Lock>> bitter = progressingLocks.entrySet().iterator();
 						while (bitter.hasNext()) {
 							Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)bitter.next();
-							if(pair.getKey().equals(bingo.getValue())) {
+							if(pair.getKey().equals(bingo.getValue())&&!removedSomething) {
 								bingo.getValue().exitTunnel(bingo.getKey());
 								removedSomething = true;
 								if(vehicle instanceof Ambulance) {
