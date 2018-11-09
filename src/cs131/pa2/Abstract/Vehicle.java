@@ -172,13 +172,15 @@ public abstract class Vehicle implements Runnable {
 			//("In the PPS dowhileintunnel");
 			long t = (10 - speed) * 100;
 			boolean ambulance = false;
-			while(t>0) {		
-				System.out.println(ambulance);
+			
+			while(t>0) {	
+			//	System.out.println(ambulance);
+				System.out.println(this.toString() + ambulance);
 				if(ambulance) {
 					System.err.println("Theres an ambulance and the vehicles have been signaled");
 					
 					try {
-						//("Awaiting Ambulance");
+						System.out.println("Awaiting Ambulance");
 						p.getNonProgressingLock(this).lock();
 						p.getNonProgressingCon(this).await();
 						p.getNonProgressingLock(this).unlock();
@@ -188,7 +190,9 @@ public abstract class Vehicle implements Runnable {
 					}
 					
 				}
+				
 				ambulance = true;
+				System.out.println(this.toString() + ambulance);
 				long t1 = System.currentTimeMillis();
 				p.getProgressingLock(this).lock();
 				//("This is t at the beginning" + t);
