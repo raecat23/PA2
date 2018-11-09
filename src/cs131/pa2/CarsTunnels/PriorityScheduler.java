@@ -38,11 +38,8 @@ public class PriorityScheduler extends Tunnel{
 	
 	public boolean onWaitingList(Vehicle vehicle) {
 		boolean answer = false;
-		try {
-			answer = prioWait.contains(vehicle);
-		} finally {
-			return answer;
-		}
+		answer = prioWait.contains(vehicle);
+		return answer;
 	}
 	
 	
