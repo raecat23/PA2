@@ -23,7 +23,7 @@ public class PreemptivePriorityScheduler extends Tunnel{
 	//public PriorityScheduler prioSched;
 	private final Lock lock = new ReentrantLock(); 
 	private final Condition prioCond = lock.newCondition();
-	public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>();
+public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>();
 	
 	public ArrayList<Vehicle> prioWait = new ArrayList<Vehicle>();
 	
@@ -74,7 +74,7 @@ public class PreemptivePriorityScheduler extends Tunnel{
 		}
 		while(!entered) {
 			//If your cool enough to go right in
-			if (!gottaWait(vehicle)&&!entered&&!onWaitingList(vehicle)&&maxWaitingPriority<4) {
+			if (!gottaWait(vehicle)&&!entered&&!onWaitingList(vehicle)) {
 				Iterator<Entry<Tunnel, Lock>> it = progressingLocks.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)it.next();
@@ -86,25 +86,23 @@ public class PreemptivePriorityScheduler extends Tunnel{
 							System.out.println(progressingConditions.get(pair.getKey()).toString());
 							vehicle.p.getProgressingLock(vehicle).lock();
 							try {
-								vehicle.p.getProgressingCon(vehicle).signalAll();
-							} finally {
-								vehicle.p.getProgressingLock(vehicle).unlock();
-							}	
+							vehicle.p.getProgressingCon(vehicle).signalAll();
+							}finally {
+							vehicle.p.getProgressingLock(vehicle).unlock();
+							}
 						}
+						break;
 					}		
 				}
 				//If you didn't enter, go into 
 				if(!entered) {
-					if (vehicle.getPriority() > maxWaitingPriority) {
-						maxWaitingPriority = vehicle.getPriority();
-					}
 					prioWait.add(vehicle);
 				}
 			} else if (onWaitingList(vehicle)&&!entered&&!gottaWait(vehicle)){
 				Iterator<Entry<Tunnel, Lock>> it = progressingLocks.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)it.next();
-					if(pair.getKey().tryToEnter(vehicle) && !entered) {
+					if(pair.getKey().tryToEnter(vehicle)) {
 						prioWait.remove(vehicle);										
 						int maxPrio = 0;
 						for (Vehicle v: prioWait) {
@@ -119,11 +117,12 @@ public class PreemptivePriorityScheduler extends Tunnel{
 							System.err.println("Signaling from wait list");
 							vehicle.p.getProgressingLock(vehicle).lock();
 							try {
-								vehicle.p.getProgressingCon(vehicle).signalAll();
-							} finally {
-								vehicle.p.getProgressingLock(vehicle).unlock();
+							vehicle.p.getProgressingCon(vehicle).signalAll();
+							}finally {
+							vehicle.p.getProgressingLock(vehicle).unlock();
 							}
 						}
+						break;
 					}					
 				
 					
@@ -163,9 +162,25 @@ public class PreemptivePriorityScheduler extends Tunnel{
 								bingo.getValue().exitTunnel(bingo.getKey());
 								removedSomething = true;
 								if(vehicle instanceof Ambulance) {
+									boolean ambulanceWaiting = false;
+									for(Vehicle v : prioWait) {
+										if (v instanceof Ambulance) {
+											ambulanceWaiting = true;
+										}
+									}
+									//if(!ambulanceWaiting) {
 									nonProgressingLocks.get(pair.getKey()).lock();
+									try {
 									nonProgressingConditions.get(pair.getKey()).signalAll();
+									}finally {
 									nonProgressingLocks.get(pair.getKey()).unlock();
+									}
+									//}
+								/*	else {
+										nonProgressingLocks.get(pair.getKey()).lock();
+										nonProgressingConditions.get(pair.getKey()).signalAll();
+										nonProgressingLocks.get(pair.getKey()).unlock();
+									}*/
 									}
 								//System.out.println("FRIENDSHIP ENDED WITH" + bingo.toString() );
 							}

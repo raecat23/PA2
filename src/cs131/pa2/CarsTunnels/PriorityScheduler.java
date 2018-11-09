@@ -68,9 +68,6 @@ public class PriorityScheduler extends Tunnel{
 					}
 					//If you didn't enter, go into 
 					if(!entered) {
-						if (maxWaitingPriority < vehicle.getPriority()) {
-							maxWaitingPriority = vehicle.getPriority();
-						}
 						prioWait.add(vehicle);
 					}
 				} else if (onWaitingList(vehicle)&&!entered&&!gottaWait(vehicle)){

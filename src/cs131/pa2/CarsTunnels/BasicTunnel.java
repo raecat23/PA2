@@ -35,16 +35,17 @@ public class BasicTunnel extends Tunnel{
 
 	@Override
 	public synchronized boolean tryToEnterInner(Vehicle vehicle) {//Directional checking
-		if(vehicle instanceof Ambulance) { //Ambulances dont give a fuck which way traffic is flowing
+		if(vehicle instanceof Ambulance) {
 			return checkToEnter(vehicle);
-		} else if (dir == null) {
-			dir = vehicle.getDirection().toString(); 
-			return checkToEnter(vehicle);
-		} else if (vehicle.getDirection().toString().equals(dir)) {
-			dir = vehicle.getDirection().toString();
-			return checkToEnter(vehicle);
-		} 
-		return false;
+		}
+		else if (dir == null) {
+				dir = vehicle.getDirection().toString(); 
+				return checkToEnter(vehicle);
+			} else if (vehicle.getDirection().toString().equals(dir)) {
+				dir = vehicle.getDirection().toString();
+				return checkToEnter(vehicle);
+			} 
+			return false;
 	}
 	
 	public synchronized boolean checkToEnter(Vehicle vehicle) {//Is the tunnel full checking
