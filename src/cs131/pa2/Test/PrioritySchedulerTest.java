@@ -184,6 +184,7 @@ public class PrioritySchedulerTest {
 					break;
 				}
 			}
+			System.out.println(currentEvent);
 			if(currentEvent.getEvent() == EventType.LEAVE_START) {
 				if(currentEvent.getVehicle() instanceof Car && !ambulanceLeft) {
 					assertTrue("Vehicle "+currentEvent.getVehicle() + " left tunnel while ambulance was still running!", false);
@@ -191,7 +192,7 @@ public class PrioritySchedulerTest {
 				if(currentEvent.getVehicle() instanceof Ambulance)
 					ambulanceLeft = true;
 			}
-			System.out.println(currentEvent.toString());
+//			System.out.println(currentEvent.toString());
 		} while (!currentEvent.getEvent().equals(EventType.END_TEST));
 		if(ambulance == null | cars[0] == null || cars[1] == null || cars[2] == null) {
 			assertTrue("Vehicles did not enter tunnel successfully!", false);
