@@ -32,18 +32,18 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	public PreemptivePriorityScheduler(String name, Collection<Tunnel> tunnels, Log log) {
 		super(name);
 		for(Tunnel t : tunnels) {
-			//System.out.println("IS THIS THE GODDAMN PROBLEM");
+			////("IS THIS THE GODDAMN PROBLEM");
 			Lock prog = new ReentrantLock();
-			System.out.println("Progressing Lock: " + prog.toString());
+			//("Progressing Lock: " + prog.toString());
 			progressingLocks.put(t, prog);
 			
 			Lock nonprog = new ReentrantLock();
-			System.out.println("NONProgressing Lock: " + nonprog.toString());
+			//("NONProgressing Lock: " + nonprog.toString());
 			nonProgressingLocks.put(t, nonprog);
 			progressingConditions.put(t, prog.newCondition());
 			nonProgressingConditions.put(t, nonprog.newCondition());
 		}
-		//System.out.println("Everything created");
+		////("Everything created");
 		//prioSched = new PriorityScheduler(name, tunnels, log);
 		//use this to make the locks and map them to each lock
 	}
@@ -69,21 +69,19 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 		try {
 		vehicle.addPPS(this);	
 		boolean ambulance = false;
-		//System.out.println("TRYING TO ENTER WITH PPS");
+		////("TRYING TO ENTER WITH PPS");
 		if(vehicle instanceof Ambulance ) {
-			System.out.println("Theres an ambulance");
+			//("Theres an ambulance");
 			ambulance = true;
 		}
 		while(ambulance) {//im forgetting locks here
 			for(Tunnel t : progressingLocks.keySet()) {
-				//System.out.println("checking tunnels");
+				////("checking tunnels");
 				for(Vehicle v : VehicleAndTunnel.keySet()) {
-		//			System.out.println("Checking vehicles");
+		//			//("Checking vehicles");
 					if(VehicleAndTunnel.get(v).equals(t) && !(v instanceof Ambulance)) {
-						nonProgressingLocks.get(t).lock();
-						nonProgressingConditions.get(t).signalAll();
-						nonProgressingLocks.get(t).unlock();
-						System.out.println("Entering tunnel");
+						progressingConditions.get(t).signalAll();
+						//("Entering tunnel");
 		
 						VehicleAndTunnel.put(vehicle, t);
 						entered = true;
@@ -97,16 +95,16 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 			//lock.lock();
 			
 			while(!entered) {
-				System.out.println("entering while loop");
+				//("entering while loop");
 				//If your cool enough to go right in
 				if (!gottaWait(vehicle)&&!entered&&!onWaitingList(vehicle)) {
-					System.out.println("You dont need to wait");
+					//("You dont need to wait");
 					Iterator it = progressingLocks.entrySet().iterator();
 					while (it.hasNext()) {
-						System.out.println("Iterating through tunnels");
+						//("Iterating through tunnels");
 						Map.Entry<Tunnel, Lock>pair = (Map.Entry<Tunnel, Lock>)it.next();
 						if(pair.getKey().tryToEnter(vehicle)) {
-							System.out.println("Entering tunnel");
+							//("Entering tunnel");
 							VehicleAndTunnel.put(vehicle, pair.getKey());
 							entered = true;
 							break;
@@ -157,20 +155,23 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	public void exitTunnelInner(Vehicle vehicle) {
 		lock.lock();
 		if(vehicle instanceof Ambulance) {
-			System.out.println("Ambulance exiting");
+			//("Ambulance exiting");
 			Tunnel temp = VehicleAndTunnel.get(vehicle);
-			System.out.println("TEMP IN EXITING: " +temp.toString());
-			nonProgressingLocks.get(temp).lock();
-			nonProgressingConditions.get(temp).notifyAll();
-			nonProgressingLocks.get(temp).unlock();
+			//("TEMP IN EXITING: " +temp.toString());
+			temp.exitTunnel(vehicle);
+			
+			//nonProgressingLocks.get(temp).lock();
+			nonProgressingConditions.get(temp).signalAll();
+		//	nonProgressingLocks.get(temp).unlock();
 		}
+		else {
 		boolean removedSomething = false;
 
 		try {
 			Iterator iter = VehicleAndTunnel.entrySet().iterator();
 			while(iter.hasNext()) {
 				Map.Entry<Vehicle, Tunnel> bingo = (Map.Entry<Vehicle, Tunnel>)iter.next();
-				System.out.println(bingo.toString());
+				//(bingo.toString());
 				if(bingo.getKey().equals(vehicle)) {
 					try {
 						Iterator bitter = progressingLocks.entrySet().iterator();
@@ -179,7 +180,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 							if(pair.getKey().equals(bingo.getValue())) {
 								bingo.getValue().exitTunnel(bingo.getKey());
 								removedSomething = true;
-								System.out.println("FRIENDSHIP ENDED WITH" + bingo.toString() );
+								//("FRIENDSHIP ENDED WITH" + bingo.toString() );
 							}
 						}
 					} finally {
@@ -190,20 +191,20 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 		} finally {
 			
 			if (removedSomething) {prioCond.signalAll();}
-			System.out.println("EXITING");
+			//("EXITING");
 			lock.unlock();
 		}
-		
+		}
 	}
 	
 	public Lock getNonProgressingLock(Vehicle vehicle) {
 		Tunnel temp = VehicleAndTunnel.get(vehicle);
-		System.out.println(temp.toString());
+		//(temp.toString());
 		return nonProgressingLocks.get(temp);
 	}
 	public Lock getProgressingLock(Vehicle vehicle) {
 		Tunnel temp = VehicleAndTunnel.get(vehicle);
-		System.out.println("TEMP : " + temp.toString());
+		//("TEMP : " + temp.toString());
 		return progressingLocks.get(temp);
 	}
 	public Condition getNonProgressingCon(Vehicle vehicle) {
