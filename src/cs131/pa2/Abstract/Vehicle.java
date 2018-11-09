@@ -174,7 +174,7 @@ public abstract class Vehicle implements Runnable {
 			boolean ambulance = false;
 			while(t>0) {	
 				System.out.println(this.toString() + ambulance);
-				if(ambulance) {
+				if(ambulance ) {
 					System.err.println("Theres an ambulance and the vehicles have been signaled");
 					try {
 						System.out.println("Awaiting Ambulance");
