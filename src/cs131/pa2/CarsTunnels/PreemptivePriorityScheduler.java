@@ -23,7 +23,7 @@ public class PreemptivePriorityScheduler extends Tunnel{
 	//public PriorityScheduler prioSched;
 	private final Lock lock = new ReentrantLock(); 
 	private final Condition prioCond = lock.newCondition();
-public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>();
+	public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>();
 	
 	public ArrayList<Vehicle> prioWait = new ArrayList<Vehicle>();
 	
@@ -74,7 +74,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 		}
 		while(!entered) {
 			//If your cool enough to go right in
-			if (!gottaWait(vehicle)&&!entered&&!onWaitingList(vehicle)) {
+			if (!gottaWait(vehicle)&&!entered&&!onWaitingList(vehicle)&&maxWaitingPriority<4) {
 				Iterator<Entry<Tunnel, Lock>> it = progressingLocks.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)it.next();
@@ -94,13 +94,16 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 				}
 				//If you didn't enter, go into 
 				if(!entered) {
+					if (vehicle.getPriority() > maxWaitingPriority) {
+						maxWaitingPriority = vehicle.getPriority();
+					}
 					prioWait.add(vehicle);
 				}
 			} else if (onWaitingList(vehicle)&&!entered&&!gottaWait(vehicle)){
 				Iterator<Entry<Tunnel, Lock>> it = progressingLocks.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)it.next();
-					if(pair.getKey().tryToEnter(vehicle)) {
+					if(pair.getKey().tryToEnter(vehicle) && !entered) {
 						prioWait.remove(vehicle);										
 						int maxPrio = 0;
 						for (Vehicle v: prioWait) {
