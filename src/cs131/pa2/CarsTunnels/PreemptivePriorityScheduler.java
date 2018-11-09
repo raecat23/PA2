@@ -85,11 +85,12 @@ public class PreemptivePriorityScheduler extends Tunnel{
 							System.err.println("Signaling" + vehicle.toString());
 							System.out.println(progressingConditions.get(pair.getKey()).toString());
 							vehicle.p.getProgressingLock(vehicle).lock();
-							vehicle.p.getProgressingCon(vehicle).signalAll();
-							vehicle.p.getProgressingLock(vehicle).unlock();
-							
+							try {
+								vehicle.p.getProgressingCon(vehicle).signalAll();
+							} finally {
+								vehicle.p.getProgressingLock(vehicle).unlock();
+							}	
 						}
-						break;
 					}		
 				}
 				//If you didn't enter, go into 
@@ -117,10 +118,12 @@ public class PreemptivePriorityScheduler extends Tunnel{
 						if(ambulance) {
 							System.err.println("Signaling from wait list");
 							vehicle.p.getProgressingLock(vehicle).lock();
-							vehicle.p.getProgressingCon(vehicle).signalAll();
-							vehicle.p.getProgressingLock(vehicle).unlock();
+							try {
+								vehicle.p.getProgressingCon(vehicle).signalAll();
+							} finally {
+								vehicle.p.getProgressingLock(vehicle).unlock();
+							}
 						}
-						break;
 					}					
 				
 					
