@@ -13,20 +13,19 @@ import java.util.concurrent.locks.ReentrantLock;
 import cs131.pa2.Abstract.Tunnel;
 import cs131.pa2.Abstract.Vehicle;
 import cs131.pa2.Abstract.Log.Log;
-import javafx.util.Pair;
 
 public class PreemptivePriorityScheduler extends Tunnel{
-	Map<Tunnel, Lock> progressingLocks = new HashMap();
-	Map<Tunnel, Lock> nonProgressingLocks = new HashMap();
-	Map<Tunnel, Condition> progressingConditions = new HashMap();
-	Map<Tunnel, Condition> nonProgressingConditions = new HashMap();
+	Map<Tunnel, Lock> progressingLocks = new HashMap<Tunnel, Lock>();
+	Map<Tunnel, Lock> nonProgressingLocks = new HashMap<Tunnel, Lock>();
+	Map<Tunnel, Condition> progressingConditions = new HashMap<Tunnel, Condition>();
+	Map<Tunnel, Condition> nonProgressingConditions = new HashMap<Tunnel, Condition>();
 	//public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	//public PriorityScheduler prioSched;
 	private final Lock lock = new ReentrantLock(); 
 	private final Condition prioCond = lock.newCondition();
-public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
+public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>();
 	
-	public ArrayList<Vehicle> prioWait = new ArrayList();
+	public ArrayList<Vehicle> prioWait = new ArrayList<Vehicle>();
 	
 	//public HashMap<Tunnel, Lock> tunnelList = new HashMap<Tunnel, Lock>();
 	int maxWaitingPriority = 0;
@@ -52,6 +51,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 		return (vehicle.getPriority() < maxWaitingPriority);
 	}
 	
+	@SuppressWarnings("finally")
 	public boolean onWaitingList(Vehicle vehicle) {
 		boolean answer = false;
 		try {
@@ -63,6 +63,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 	
 	
 
+	@SuppressWarnings("finally")
 	@Override
 	public boolean tryToEnterInner(Vehicle vehicle) {
 		lock.lock();
@@ -78,13 +79,15 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 		while(!entered) {
 			//If your cool enough to go right in
 			if (!gottaWait(vehicle)&&!entered&&!onWaitingList(vehicle)) {
-				Iterator it = progressingLocks.entrySet().iterator();
+				Iterator<Entry<Tunnel, Lock>> it = progressingLocks.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)it.next();
 					if(pair.getKey().tryToEnter(vehicle)) {
 						VehicleAndTunnel.put(vehicle, pair.getKey());
 						entered = true;
-						if(vehicle instanceof Ambulance) {
+						if(ambulance) {
+							System.err.println("Signaling");
+							System.out.println(nonProgressingConditions.get(pair.getKey()).toString());
 							nonProgressingConditions.get(pair.getKey()).signalAll();
 						}
 					}		
@@ -94,7 +97,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 					prioWait.add(vehicle);
 				}
 			} else if (onWaitingList(vehicle)&&!entered&&!gottaWait(vehicle)){
-				Iterator it = progressingLocks.entrySet().iterator();
+				Iterator<Entry<Tunnel, Lock>> it = progressingLocks.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)it.next();
 					if(pair.getKey().tryToEnter(vehicle)) {
@@ -109,7 +112,8 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 					}					
 					VehicleAndTunnel.put(vehicle, pair.getKey());
 					entered = true;	
-					if(vehicle instanceof Ambulance) {
+					if(ambulance) {
+						System.err.println("Signaling from wait list");
 						nonProgressingConditions.get(pair.getKey()).signalAll();
 					}
 				}
@@ -135,13 +139,13 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 		boolean removedSomething = false;
 		lock.lock();
 		try {
-			Iterator iter = VehicleAndTunnel.entrySet().iterator();
+			Iterator<Entry<Vehicle, Tunnel>> iter = VehicleAndTunnel.entrySet().iterator();
 			while(iter.hasNext()) {
 				Map.Entry<Vehicle, Tunnel> bingo = (Map.Entry<Vehicle, Tunnel>)iter.next();
 				//System.out.println(bingo.toString());
 				if(bingo.getKey().equals(vehicle)) {
 					try {
-						Iterator bitter = progressingLocks.entrySet().iterator();
+						Iterator<Entry<Tunnel, Lock>> bitter = progressingLocks.entrySet().iterator();
 						while (bitter.hasNext()) {
 							Map.Entry<Tunnel, Lock> pair = (Map.Entry<Tunnel, Lock>)bitter.next();
 							if(pair.getKey().equals(bingo.getValue())) {
