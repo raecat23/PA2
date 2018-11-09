@@ -169,41 +169,35 @@ public abstract class Vehicle implements Runnable {
 	 * vehicle is, the less time this will take.
 	 */
 	public final void doWhileInTunnel() {
-		if(p != null && !(this instanceof Ambulance)) {
+		if(p != null && !(this instanceof Ambulance)) {//if we are in the preemptive priority schedule and we are not an ambulance
 			long t = (10 - speed) * 100;
-			boolean ambulance = false;
+			boolean ambulance = false; //this boolean keeps track of whether or not we have been interrupted
 			while(t>0) {	
-				System.out.println(this.toString() + ambulance);
-				if(ambulance ) {
-					System.err.println("Theres an ambulance and the vehicles have been signaled");
-					try {
-						System.out.println("Awaiting Ambulance");
+				if(ambulance ) {//if we were interrupted 
+					try {//lock in a CS and await signaling from the ambulance
 						p.getNonProgressingLock(this).lock();
 						p.getNonProgressingCon(this).await();
 						p.getNonProgressingLock(this).unlock();
 					} catch (InterruptedException e) {}	
 				}
+				//there will never be an ambulance the first time the car starts, so after that block set it equal to true so we know if it gets to the top it is interrupted 
 				ambulance = true;
-				System.out.println(this.toString() + ambulance);
 				long t1 = System.currentTimeMillis();
 				//
-				try {
-					System.out.println("T at beginning" + t);
-					System.out.println("Awaiting " + p.getProgressingCon(this).toString());
+				try {//normal awaiting: lock and await the time given by the velocity formula
 					p.getProgressingLock(this).lock();
 					p.getProgressingCon(this).await(t, TimeUnit.MILLISECONDS);
 					p.getProgressingLock(this).unlock();
 				} catch (InterruptedException e) {}
-				//
 				long t2 = System.currentTimeMillis();
 				t -= Math.abs(t1 - t2);
-				System.out.println(t );
-				System.err.println("Time left after await" + t);
-			//	p.getProgressingLock(this).unlock();
+				//if t is greater than 0 it means it was interrupted and goes back to the top
+				//if it is less it means it made it through the tunnel
 			}
 		}
 		else{
 			try {
+				//this is what happens if the scheduler is not PPS or if it is an ambulance
 				Thread.sleep((10 - speed) * 100);
 			} catch(InterruptedException e) {
 				System.err.println("Interrupted vehicle " + getName());
