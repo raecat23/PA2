@@ -96,6 +96,9 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 				}
 				//If you didn't enter, go into 
 				if(!entered) {
+					if(vehicle.getPriority() > maxWaitingPriority) {//Set the maxWaitingPriority
+						maxWaitingPriority = vehicle.getPriority();
+					}
 					prioWait.add(vehicle);
 				}
 			} else if (onWaitingList(vehicle)&&!entered&&!gottaWait(vehicle)){

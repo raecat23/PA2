@@ -25,7 +25,7 @@ public class BasicTunnel extends Tunnel{
 		return (activeCars > 0 || activeSled > 0 || activeAmberlamps > 0);
 	}
 	
-	private boolean amberlampShouldPass() {
+	private boolean amberlampShouldPass() {//Returns true if ambulances should pass the tunnel (Only if there is another ambulance in the tunnel)
 		return (activeAmberlamps > 0);
 	}
 
@@ -35,7 +35,7 @@ public class BasicTunnel extends Tunnel{
 
 	@Override
 	public synchronized boolean tryToEnterInner(Vehicle vehicle) {//Directional checking
-		if(vehicle instanceof Ambulance) {
+		if(vehicle instanceof Ambulance) {//Vehicles dont care about direction
 			return checkToEnter(vehicle);
 		}
 		else if (dir == null) {
@@ -48,7 +48,7 @@ public class BasicTunnel extends Tunnel{
 			return false;
 	}
 	
-	public synchronized boolean checkToEnter(Vehicle vehicle) {//Is the tunnel full checking
+	public synchronized boolean checkToEnter(Vehicle vehicle) {//Is the tunnel full checking. 
 		if(vehicle instanceof Car) {
 			if (carsShouldPass()) {
 				return false;
