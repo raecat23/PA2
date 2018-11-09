@@ -30,7 +30,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 	//public HashMap<Tunnel, Lock> tunnelList = new HashMap<Tunnel, Lock>();
 	int maxWaitingPriority = 0;
 	public PreemptivePriorityScheduler(String name, Collection<Tunnel> tunnels, Log log) {
-		super(name);
+		super(name, log);
 		for(Tunnel t : tunnels) {
 			////("IS THIS THE GODDAMN PROBLEM");
 			Lock prog = new ReentrantLock();
@@ -87,8 +87,8 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 						entered = true;
 						if(ambulance) {
 							System.err.println("Signaling");
-							System.out.println(nonProgressingConditions.get(pair.getKey()).toString());
-							nonProgressingConditions.get(pair.getKey()).signalAll();
+							//System.out.println(nonProgressingConditions.get(pair.getKey()).toString());
+							progressingConditions.get(pair.getKey()).signalAll();
 						}
 					}		
 				}

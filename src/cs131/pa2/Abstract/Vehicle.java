@@ -169,7 +169,7 @@ public abstract class Vehicle implements Runnable {
 	 * vehicle is, the less time this will take.
 	 */
 	public final void doWhileInTunnel() {
-		if(p != null) {
+		if(p != null && !(this instanceof Ambulance)) {
 			//("In the PPS dowhileintunnel");
 			long t = (10 - speed) * 100;
 			boolean ambulance = false;
@@ -177,7 +177,7 @@ public abstract class Vehicle implements Runnable {
 			while(t>0) {	
 			//	System.out.println(ambulance);
 				System.out.println(this.toString() + ambulance);
-				if(ambulance) {
+				if(ambulance ) {
 					System.err.println("Theres an ambulance and the vehicles have been signaled");
 					
 					try {
@@ -196,11 +196,11 @@ public abstract class Vehicle implements Runnable {
 				System.out.println(this.toString() + ambulance);
 				long t1 = System.currentTimeMillis();
 				p.getProgressingLock(this).lock();
-				if(this instanceof Ambulance) {
+			/*	if(this instanceof Ambulance) {
 					p.getNonProgressingLock(this).lock();
 					p.getNonProgressingCon(this).signalAll();
 					p.getNonProgressingLock(this).unlock();
-				}
+				}*/
 				//("This is t at the beginning" + t);
 				try {
 
@@ -214,16 +214,18 @@ public abstract class Vehicle implements Runnable {
 				long t2 = System.currentTimeMillis();
 				//("This is t1 - t2" +( t1-t2));
 				t -= Math.abs(t1 - t2);
+				System.out.println(t > 0);
 				System.err.println("Time left after await" + t);
 				//("This is t at the end" + t);
 				p.getProgressingLock(this).unlock();
 			}
-			if(this instanceof Ambulance) {
+		/*	if(this instanceof Ambulance) {
 				System.out.println(p.getNonProgressingCon(this));
+				//Sleep for velocity time here
 				p.getNonProgressingLock(this).lock();
 				p.getNonProgressingCon(this).signalAll();
 				p.getNonProgressingLock(this).unlock();
-			}
+			}*/
 		}
 		else{
 			try {
