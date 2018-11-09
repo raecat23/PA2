@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -84,7 +85,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 						VehicleAndTunnel.put(vehicle, pair.getKey());
 						entered = true;
 						if(vehicle instanceof Ambulance) {
-							progressingConditions.get(pair.getKey()).signalAll();
+							nonProgressingConditions.get(pair.getKey()).signalAll();
 						}
 					}		
 				}
@@ -109,7 +110,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 					VehicleAndTunnel.put(vehicle, pair.getKey());
 					entered = true;	
 					if(vehicle instanceof Ambulance) {
-						progressingConditions.get(pair.getKey()).signalAll();
+						nonProgressingConditions.get(pair.getKey()).signalAll();
 					}
 				}
 			}
@@ -147,9 +148,9 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap();
 								bingo.getValue().exitTunnel(bingo.getKey());
 								removedSomething = true;
 								if(vehicle instanceof Ambulance) {
-									
-									nonProgressingConditions.get(bingo.getValue()).signalAll();
-									
+									nonProgressingLocks.get(pair.getKey()).lock();
+									nonProgressingConditions.get(pair.getKey()).signalAll();
+									nonProgressingLocks.get(pair.getKey()).unlock();
 									}
 								//System.out.println("FRIENDSHIP ENDED WITH" + bingo.toString() );
 							}
