@@ -86,6 +86,8 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 						VehicleAndTunnel.put(vehicle, pair.getKey());
 						entered = true;
 						if(ambulance) {
+							System.err.println("Signaling");
+							System.out.println(nonProgressingConditions.get(pair.getKey()).toString());
 							nonProgressingConditions.get(pair.getKey()).signalAll();
 						}
 					}		
@@ -111,6 +113,7 @@ public HashMap<Vehicle, Tunnel> VehicleAndTunnel = new HashMap<Vehicle, Tunnel>(
 					VehicleAndTunnel.put(vehicle, pair.getKey());
 					entered = true;	
 					if(ambulance) {
+						System.err.println("Signaling from wait list");
 						nonProgressingConditions.get(pair.getKey()).signalAll();
 					}
 				}

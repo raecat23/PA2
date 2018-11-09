@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import cs131.pa2.Abstract.Log.EventType;
 import cs131.pa2.Abstract.Log.Log;
+import cs131.pa2.CarsTunnels.Ambulance;
 import cs131.pa2.CarsTunnels.PreemptivePriorityScheduler;
 
 /**
@@ -195,6 +196,11 @@ public abstract class Vehicle implements Runnable {
 				System.out.println(this.toString() + ambulance);
 				long t1 = System.currentTimeMillis();
 				p.getProgressingLock(this).lock();
+				if(this instanceof Ambulance) {
+					p.getNonProgressingLock(this).lock();
+					p.getNonProgressingCon(this).signalAll();
+					p.getNonProgressingLock(this).unlock();
+				}
 				//("This is t at the beginning" + t);
 				try {
 
@@ -212,7 +218,12 @@ public abstract class Vehicle implements Runnable {
 				//("This is t at the end" + t);
 				p.getProgressingLock(this).unlock();
 			}
-
+			if(this instanceof Ambulance) {
+				System.out.println(p.getNonProgressingCon(this));
+				p.getNonProgressingLock(this).lock();
+				p.getNonProgressingCon(this).signalAll();
+				p.getNonProgressingLock(this).unlock();
+			}
 		}
 		else{
 			try {
