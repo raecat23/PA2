@@ -173,61 +173,37 @@ public abstract class Vehicle implements Runnable {
 			long t = (10 - speed) * 100;
 			boolean ambulance = false;
 			while(t>0) {	
-			//	System.out.println(ambulance);
 				System.out.println(this.toString() + ambulance);
 				if(ambulance ) {
 					System.err.println("Theres an ambulance and the vehicles have been signaled");
 					try {
 						System.out.println("Awaiting Ambulance");
-						//p.getNonProgressingLock(this).lock();
+						p.getNonProgressingLock(this).lock();
 						p.getNonProgressingCon(this).await();
-						//p.getNonProgressingLock(this).unlock();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
+						p.getNonProgressingLock(this).unlock();
+					} catch (InterruptedException e) {}	
 				}
-				
 				ambulance = true;
 				System.out.println(this.toString() + ambulance);
 				long t1 = System.currentTimeMillis();
-				//p.getProgressingLock(this).lock();
-			/*	if(this instanceof Ambulance) {
-					p.getNonProgressingLock(this).lock();
-					p.getNonProgressingCon(this).signalAll();
-					p.getNonProgressingLock(this).unlock();
-				}*/
-				//("This is t at the beginning" + t);
+				//
 				try {
 					System.out.println("T at beginning" + t);
 					System.out.println("Awaiting " + p.getProgressingCon(this).toString());
+					p.getProgressingLock(this).lock();
 					p.getProgressingCon(this).await(t, TimeUnit.MILLISECONDS);
-				
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				//p.getProgressingLock(this).unlock();
+					p.getProgressingLock(this).unlock();
+				} catch (InterruptedException e) {}
+				//
 				long t2 = System.currentTimeMillis();
-				//("This is t1 - t2" +( t1-t2));
 				t -= Math.abs(t1 - t2);
 				System.out.println(t );
 				System.err.println("Time left after await" + t);
-				//("This is t at the end" + t);
 			//	p.getProgressingLock(this).unlock();
 			}
-		/*	if(this instanceof Ambulance) {
-				System.out.println(p.getNonProgressingCon(this));
-				//Sleep for velocity time here
-				p.getNonProgressingLock(this).lock();
-				p.getNonProgressingCon(this).signalAll();
-				p.getNonProgressingLock(this).unlock();
-			}*/
 		}
 		else{
 			try {
-				//("In the normal dowhileintunnel");
 				Thread.sleep((10 - speed) * 100);
 			} catch(InterruptedException e) {
 				System.err.println("Interrupted vehicle " + getName());
